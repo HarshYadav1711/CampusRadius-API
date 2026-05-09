@@ -31,9 +31,13 @@ No ORM, no geospatial SQL extensions, and no third-party distance libraries: dis
 
 ```
 ├── app.js                      Express app, middleware, error handling
-├── server.js                   Listens on PORT
+├── server.js                   Listens on PORT and BIND_HOST
+├── render.yaml                 Optional Render Blueprint (Web Service)
+├── DEPLOYMENT.md               Hosted demo steps (Render + MySQL)
 ├── sql/
 │   └── schema.sql              Table definition for `schools`
+├── postman/
+│   └── CampusRadius-API.postman_collection.json
 ├── src/
 │   ├── config/
 │   │   ├── database.js         MySQL pool (env-driven)
@@ -109,23 +113,36 @@ Prerequisites: Node.js 18 or newer, and a reachable MySQL 8 server.
    npm start
    ```
 
-   By default the API listens on port 3000 unless `PORT` overrides it.
+   To run with `NODE_ENV=production` locally (matches typical hosted behavior):
+
+   ```bash
+   NODE_ENV=production npm start
+   ```
+
+   On Windows Command Prompt: `set NODE_ENV=production&& npm start`
+
+   By default the API listens on port **3000** unless **`PORT`** overrides it. The server binds to **0.0.0.0** by default so platforms such as Render can route inbound traffic; override with **`BIND_HOST`** only if something in your stack requires it.
 
 ## Environment variables
 
 Values are read at startup. The database pool expects **DB_HOST**, **DB_USER**, and **DB_NAME** to be set; an empty **DB_PASSWORD** is allowed for typical local MySQL installs.
 
-| Variable        | Required | Description |
-| --------------- | -------- | ----------- |
-| `PORT`          | No       | HTTP port (default `3000`). |
-| `NODE_ENV`      | No       | Set to `production` to reduce error detail in logs and responses. |
-| `DB_HOST`       | Yes      | MySQL host. |
-| `DB_PORT`       | No       | MySQL port (default `3306`). |
-| `DB_USER`       | Yes      | MySQL user. |
-| `DB_PASSWORD`   | No       | Password; omit or leave empty if your server allows it. |
-| `DB_NAME`       | Yes      | Database name containing `schools`. |
-| `DB_POOL_LIMIT` | No       | Max connections in the pool (default `10`). |
-| `CORS_ORIGIN`   | No       | Allowed browser origin, or `*` for any during local testing. |
+| Variable                       | Required | Description |
+| ------------------------------ | -------- | ----------- |
+| `PORT`                         | No       | HTTP port (default `3000`; cloud hosts usually set this). |
+| `BIND_HOST`                    | No       | Bind address (default `0.0.0.0` for containers and PaaS). |
+| `NODE_ENV`                     | No       | Use **`production`** on hosted demos so clients get generic error bodies. |
+| `DB_HOST`                      | Yes      | MySQL host. |
+| `DB_PORT`                      | No       | MySQL port (default `3306`). |
+| `DB_USER`                      | Yes      | MySQL user. |
+| `DB_PASSWORD`                  | No       | Password; omit or leave empty if your server allows it. |
+| `DB_NAME`                      | Yes      | Database name containing `schools`. |
+| `DB_POOL_LIMIT`                | No       | Max connections in the pool (default `10`). |
+| `DB_SSL`                       | No       | Set to **`true`** when hosted MySQL requires TLS. |
+| `DB_SSL_REJECT_UNAUTHORIZED`   | No       | Set to **`false`** only if your provider documents it for dev/demo tiers. |
+| `CORS_ORIGIN`                  | No       | Allowed browser origin, or `*` for open access during local/demo testing. |
+
+Copy **`.env.example`** to `.env` and adjust. For deploying the API and wiring MySQL, see **`DEPLOYMENT.md`**.
 
 ## API reference
 
@@ -304,19 +321,13 @@ This keeps MySQL free of vendor-specific geospatial types and makes the behavior
 
 ## Deployment
 
-Production deployment is environment-specific. After you host the API, record the public base URL here for reviewers:
+See **`DEPLOYMENT.md`** for a concrete free-tier path (**Render** Web Service + hosted MySQL such as **Aiven** or a testing-oriented host), environment checklist, TLS notes, and limitations (idle sleep, cold starts).
 
-**Deployment base URL:** `https://your-deployment.example.com` _(replace when live)_
-
-Typical steps: provision MySQL, run `sql/schema.sql`, set the `DB_*` and `PORT` variables on the host (many platforms inject `PORT` automatically), run `npm start` as the process command, and ensure the health check can reach your database from that network.
+After deployment, put your public HTTPS base URL in **`DEPLOYMENT.md`** under “Deployment URL placeholder” for reviewers.
 
 ## Postman
 
-Export or attach a Postman collection alongside this repo when you submit or share the project. Suggested location:
-
-`postman/CampusRadius-API.postman_collection.json` _(add the exported file here)_
-
-Include calls for `GET /health`, `POST /addSchool`, and `GET /listSchools` with the examples above so others can run the same flows without rewriting requests.
+Import **`postman/CampusRadius-API.postman_collection.json`**. Set the collection variable **`baseUrl`** to your API root (`http://localhost:3000` locally, or `https://…` when hosted). The collection includes **`GET /health`**, **`POST /addSchool`**, and **`GET /listSchools`**.
 
 ## Author
 

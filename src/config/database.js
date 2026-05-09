@@ -13,13 +13,30 @@ function required(name) {
   return value;
 }
 
+/**
+ * Hosted MySQL (Aiven, cloud providers) usually expects TLS. Set DB_SSL=true when the provider requires it.
+ * Use DB_SSL_REJECT_UNAUTHORIZED=false only if the provider documents it for dev/demo tiers (weaker trust).
+ */
+function sslOption() {
+  if (process.env.DB_SSL !== "true") {
+    return undefined;
+  }
+  if (process.env.DB_SSL_REJECT_UNAUTHORIZED === "false") {
+    return { rejectUnauthorized: false };
+  }
+  return {};
+}
+
 function poolOptions() {
+  const ssl = sslOption();
+
   return {
     host: required("DB_HOST"),
     port: envInt("DB_PORT", 3306),
     user: required("DB_USER"),
     password: process.env.DB_PASSWORD ?? "",
     database: required("DB_NAME"),
+    ...(ssl !== undefined ? { ssl } : {}),
     waitForConnections: true,
     connectionLimit: envInt("DB_POOL_LIMIT", 10),
     queueLimit: 0,

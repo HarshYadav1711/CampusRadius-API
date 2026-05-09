@@ -1,0 +1,49 @@
+{
+  "info": {
+    "_postman_id": "campus-radius-api-collection",
+    "name": "CampusRadius API",
+    "description": "Health, addSchool, and listSchools. Set the collection variable `baseUrl` to your deployed or local API (e.g. https://your-service.onrender.com or http://localhost:3000).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "GET health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "POST addSchool",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Delhi Public School\",\n  \"address\": \"Sector 45, Gurugram, Haryana\",\n  \"latitude\": 28.4595,\n  \"longitude\": 77.0266\n}"
+        },
+        "url": "{{baseUrl}}/addSchool"
+      }
+    },
+    {
+      "name": "GET listSchools",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/listSchools?latitude=28.6139&longitude=77.2090"
+      }
+    }
+  ]
+}
