@@ -1,14 +1,4 @@
-const { body, validationResult } = require("express-validator");
-const response = require("../utils/response");
-
-function handleValidationErrors(req, res, next) {
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    const errors = result.array().map((e) => e.msg);
-    return response.fail(res, "Validation failed", 400, errors);
-  }
-  next();
-}
+const { body } = require("express-validator");
 
 /**
  * Parses and normalizes a coordinate; assigns a finite number back to `req.body[field]`.
@@ -83,5 +73,4 @@ const addSchoolValidators = [
 
 module.exports = {
   addSchoolValidators,
-  handleValidationErrors,
 };

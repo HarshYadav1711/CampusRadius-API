@@ -20,6 +20,28 @@ async function addSchool(req, res, next) {
   }
 }
 
+async function listSchools(req, res, next) {
+  try {
+    const userLatitude = Number(req.query.latitude);
+    const userLongitude = Number(req.query.longitude);
+
+    const schools = await schoolService.listSchoolsSortedByDistance(
+      userLatitude,
+      userLongitude
+    );
+
+    response.success(res, {
+      count: schools.length,
+      schools,
+    }, {
+      message: "Schools retrieved successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   addSchool,
+  listSchools,
 };
