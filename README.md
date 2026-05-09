@@ -38,6 +38,8 @@ No ORM, no geospatial SQL extensions, and no third-party distance libraries: dis
 ├── DEPLOYMENT.md               Hosted demo steps (Render + MySQL)
 ├── sql/
 │   └── schema.sql              Table definition for `schools`
+├── scripts/
+│   └── init-database.js        Create DB + schema (npm run db:init)
 ├── postman/
 │   └── CampusRadius-API.postman_collection.json
 ├── src/
@@ -53,6 +55,7 @@ No ORM, no geospatial SQL extensions, and no third-party distance libraries: dis
 │   │   └── validateListSchools.js
 │   ├── routes/
 │   │   ├── index.js            Mounts route modules
+│   │   ├── docs.routes.js      GET /api/docs (short HTML overview)
 │   │   ├── health.routes.js
 │   │   └── school.routes.js
 │   ├── services/
@@ -80,7 +83,7 @@ Full DDL is in `sql/schema.sql`. Apply it after creating an empty database (see 
 
 ## Installation
 
-Prerequisites: Node.js 18 or newer, and a reachable MySQL 8 server.
+Prerequisites: Node.js 18 or newer, and a **running MySQL 8 server** (the MySQL *command-line client* does not need to be installed).
 
 1. Clone the repository and install dependencies:
 
@@ -88,20 +91,23 @@ Prerequisites: Node.js 18 or newer, and a reachable MySQL 8 server.
    npm install
    ```
 
-2. Create the database and load the schema (adjust user and database name as needed):
-
-   ```bash
-   mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS campus_radius;"
-   mysql -u root -p campus_radius < sql/schema.sql
-   ```
-
-3. Copy the example environment file and edit values for your machine:
+2. Copy the example environment file and set **`DB_HOST`**, **`DB_USER`**, **`DB_NAME`**, and **`DB_PASSWORD`** (if your server uses one):
 
    ```bash
    copy .env.example .env
    ```
 
-   On Unix shells, use `cp .env.example .env`.
+   On Unix shells: `cp .env.example .env`
+
+3. Create the database and apply **`sql/schema.sql`**. From the **project root** (where `package.json` lives), run:
+
+   ```bash
+   npm run db:init
+   ```
+
+   This uses Node and **`mysql2`** only—you do **not** need the `mysql` command-line program. On Windows, if you see `mysql is not recognized`, you were trying to use the wrong tool; use **`npm run db:init`** instead.
+
+   Requirements: **`.env`** must exist (step 2) with **`DB_HOST`**, **`DB_USER`**, **`DB_NAME`** set to match your running MySQL server. Local install is usually `DB_HOST=localhost`, `DB_USER=root`, `DB_NAME=campus_radius`, and `DB_PASSWORD=` empty or your root password.
 
 4. Start the server:
 
