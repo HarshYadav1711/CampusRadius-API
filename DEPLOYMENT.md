@@ -1,6 +1,6 @@
 # Deployment notes (demo / assessment)
 
-This project is a standard Node + Express app: one web process, one MySQL database, environment variables for configuration. Below is a realistic path that stays on **free or zero-cost tiers** suitable for a reviewer to hit your API over HTTPS.
+CampusRadius API (`campus-radius-api`) — this project is a standard Node + Express app: one web process, one MySQL database, environment variables for configuration. Below is a realistic path that stays on **free or zero-cost tiers** suitable for a reviewer to hit your API over HTTPS.
 
 Limitations are called out plainly: free app tiers often **spin down after idle time** (cold starts), enforce **memory and CPU caps**, and may **sleep** until the next request. That is acceptable for a demonstration but not for production traffic.
 

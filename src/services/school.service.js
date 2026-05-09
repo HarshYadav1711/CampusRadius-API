@@ -52,7 +52,12 @@ async function listSchoolsSortedByDistance(userLatitude, userLongitude) {
     buildSchoolWithDistance(row, userLatitude, userLongitude)
   );
 
-  schools.sort((a, b) => a.distanceKm - b.distanceKm);
+  schools.sort((a, b) => {
+    if (a.distanceKm !== b.distanceKm) {
+      return a.distanceKm - b.distanceKm;
+    }
+    return a.id - b.id;
+  });
 
   return schools;
 }

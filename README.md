@@ -1,5 +1,7 @@
 # CampusRadius API
 
+**Package name:** `campus-radius-api` (see `package.json`).
+
 CampusRadius API is a small HTTP service for registering schools and listing them in distance order from a caller-supplied location. It is built as a practical backend piece you can run locally, exercise with curl or Postman, and ship behind a process manager or container with minimal ceremony.
 
 The API keeps persistence in MySQL, validates inputs before hitting the database, and computes geographic distance in application code so the schema stays portable across hosts.
@@ -311,11 +313,11 @@ Any path outside the routes above returns **404** with code `NOT_FOUND` and a sh
 
 - The same numeric rules and ranges apply to `latitude` and `longitude` query parameters. Values are normalized onto `req.query` before the handler runs.
 
-Failed validation never triggers a database write or a full table scan for listing: the middleware responds with **400** and the structured `details` list described above.
+Invalid requests are rejected before any route handler runs: **`POST /addSchool`** never reaches MySQL on failure, and **`GET /listSchools`** does not query the database until query validation passes. Responses use **400** with the structured `details` list described above.
 
 ## Distance sorting
 
-All rows are read with a plain `SELECT` on `schools`. For each row, the service computes the great-circle distance in kilometres between the user point and the school point using the **Haversine** formula with Earth radius **6371 km**. Distances are rounded to three decimal places for readability, then rows are sorted in memory by `distanceKm` ascending (nearest first).
+All rows are read with a plain `SELECT` on `schools`. For each row, the service computes the great-circle distance in kilometres between the user point and the school point using the **Haversine** formula with Earth radius **6371 km**. Distances are rounded to three decimal places for readability, then rows are sorted in memory by `distanceKm` ascending (nearest first). If two rows tie after rounding, they are ordered by **`id`** ascending so the result is stable between calls.
 
 This keeps MySQL free of vendor-specific geospatial types and makes the behavior easy to test and reason about in code.
 
