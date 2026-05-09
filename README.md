@@ -52,17 +52,23 @@ Production:
 npm start
 ```
 
-## HTTP surface (foundation)
+## HTTP surface
 
-| Method | Path      | Description |
-| ------ | --------- | ----------- |
-| GET    | `/health` | Process + MySQL ping (`503` when DB unavailable) |
-
-Additional school-domain routes belong in `src/routes`, `src/controllers`, and `src/services` as you implement them. **`express-validator`** is included for request validation on those routes—no ORM and no auth layer in this baseline.
+| Method | Path           | Description |
+| ------ | -------------- | ----------- |
+| GET    | `/health`      | Liveness / DB connectivity (`503` when MySQL is unreachable) |
+| POST   | `/addSchool`   | Create a school (validated JSON body) |
+| GET    | `/listSchools` | List schools sorted by distance from `latitude` / `longitude` query params |
 
 ## Response shape
 
-Success bodies use `{ "success": true, "data": ... }` where it fits; errors use `{ "success": false, "message": "...", "errors": [...] }` when validation applies.
+All handlers use a consistent envelope:
+
+- **Success:** `{ "success": true, "message": "<string>", "data": { ... } }` (HTTP `2xx`; often `200`, `201` for creates).
+- **Validation:** `{ "success": false, "error": { "code": "VALIDATION_FAILED", "message": "...", "details": [ { "field", "location", "message" } ] } }` with HTTP `400`.
+- **Other errors:** `{ "success": false, "error": { "code", "message", ... } }` — e.g. `404` not found, `500` internal error, `503` when `/health` reports an unhealthy database.
+
+Requests are validated with **`express-validator`** — no ORM and no auth in this baseline.
 
 ## Scripts
 

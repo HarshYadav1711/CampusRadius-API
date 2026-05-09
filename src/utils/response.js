@@ -1,32 +1,82 @@
 /**
- * Small JSON helpers so controllers stay thin and payloads stay consistent.
+ * Consistent JSON envelopes for success and error responses.
+ *
+ * Success: { success: true, message, data? }
+ * Error:    { success: false, error: { code, message, details?, context? } }
  */
 
-function success(res, data = null, meta = {}) {
-  const body = { success: true, ...meta };
-  if (data !== null && data !== undefined) body.data = data;
-  const status = meta.status ?? 200;
-  delete body.status;
-  return res.status(status).json(body);
+const ErrorCodes = {
+  VALIDATION_FAILED: "VALIDATION_FAILED",
+  NOT_FOUND: "NOT_FOUND",
+  INTERNAL_ERROR: "INTERNAL_ERROR",
+  SERVICE_UNAVAILABLE: "SERVICE_UNAVAILABLE",
+};
+
+function success(res, { message, data, statusCode = 200 }) {
+  const payload = {
+    success: true,
+    message,
+  };
+
+  if (data !== undefined && data !== null) {
+    payload.data = data;
+  }
+
+  return res.status(statusCode).json(payload);
 }
 
-function fail(res, message, status = 400, errors = undefined) {
-  const body = { success: false, message };
-  if (errors !== undefined) body.errors = errors;
-  return res.status(status).json(body);
+function error(res, { statusCode, code, message, details, context }) {
+  const errorPayload = { code, message };
+
+  if (Array.isArray(details) && details.length > 0) {
+    errorPayload.details = details;
+  }
+
+  if (
+    context !== undefined &&
+    context !== null &&
+    typeof context === "object" &&
+    Object.keys(context).length > 0
+  ) {
+    errorPayload.context = context;
+  }
+
+  return res.status(statusCode).json({
+    success: false,
+    error: errorPayload,
+  });
 }
 
-function notFound(res, message = "Not found") {
-  return fail(res, message, 404);
+function validationFailed(res, details) {
+  return error(res, {
+    statusCode: 400,
+    code: ErrorCodes.VALIDATION_FAILED,
+    message: "Request validation failed",
+    details,
+  });
 }
 
-function serverError(res, message = "Internal server error") {
-  return fail(res, message, 500);
+function notFound(res, message = "Resource not found") {
+  return error(res, {
+    statusCode: 404,
+    code: ErrorCodes.NOT_FOUND,
+    message,
+  });
+}
+
+function internalError(res, message = "Internal server error") {
+  return error(res, {
+    statusCode: 500,
+    code: ErrorCodes.INTERNAL_ERROR,
+    message,
+  });
 }
 
 module.exports = {
   success,
-  fail,
+  error,
+  validationFailed,
   notFound,
-  serverError,
+  internalError,
+  ErrorCodes,
 };

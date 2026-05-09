@@ -1,11 +1,19 @@
 const { validationResult } = require("express-validator");
 const response = require("../utils/response");
 
+function formatValidationDetails(result) {
+  return result.array().map((item) => ({
+    field: item.path ?? item.param,
+    location: item.location,
+    message: item.msg,
+  }));
+}
+
 function handleValidationErrors(req, res, next) {
   const result = validationResult(req);
   if (!result.isEmpty()) {
-    const errors = result.array().map((e) => e.msg);
-    return response.fail(res, "Validation failed", 400, errors);
+    const details = formatValidationDetails(result);
+    return response.validationFailed(res, details);
   }
   next();
 }
