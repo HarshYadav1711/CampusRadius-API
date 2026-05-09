@@ -37,7 +37,7 @@ Node.js + Express + MySQL foundation for the CampusRadius school-management back
    copy .env.example .env
    ```
 
-   Adjust MySQL credentials and optional `CORS_ORIGIN`.
+   Set **DB_HOST**, **DB_USER**, and **DB_NAME** (required). **DB_PASSWORD** may be left empty locally. Adjust optional **CORS_ORIGIN** if needed.
 
 3. Install and run:
 
