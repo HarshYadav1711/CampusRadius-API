@@ -51,18 +51,25 @@ async function main() {
   const databaseName = safeIdentifier(required("DB_NAME"), "DB_NAME");
   const ssl = sslOption();
 
+  const skipCreate =
+    process.env.SKIP_CREATE_DATABASE === "true" ||
+    process.env.SKIP_CREATE_DATABASE === "1";
+
   const conn = await mysql.createConnection({
     host,
     port,
     user,
     password,
+    ...(skipCreate ? { database: databaseName } : {}),
     ...(ssl !== undefined ? { ssl } : {}),
     multipleStatements: true,
   });
 
   try {
-    await conn.query(`CREATE DATABASE IF NOT EXISTS \`${databaseName}\``);
-    await conn.query(`USE \`${databaseName}\``);
+    if (!skipCreate) {
+      await conn.query(`CREATE DATABASE IF NOT EXISTS \`${databaseName}\``);
+      await conn.query(`USE \`${databaseName}\``);
+    }
 
     const schemaPath = path.join(rootDir, "sql", "schema.sql");
     const sql = fs.readFileSync(schemaPath, "utf8");

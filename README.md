@@ -39,7 +39,8 @@ No ORM, no geospatial SQL extensions, and no third-party distance libraries: dis
 ├── sql/
 │   └── schema.sql              Table definition for `schools`
 ├── scripts/
-│   └── init-database.js        Create DB + schema (npm run db:init)
+│   ├── init-database.js        Create DB + schema (npm run db:init)
+│   └── test-db-connection.js   Test MySQL from Node (npm run db:test)
 ├── postman/
 │   └── CampusRadius-API.postman_collection.json
 ├── src/
@@ -108,6 +109,22 @@ Prerequisites: Node.js 18 or newer, and a **running MySQL 8 server** (the MySQL 
    This uses Node and **`mysql2`** only—you do **not** need the `mysql` command-line program. On Windows, if you see `mysql is not recognized`, you were trying to use the wrong tool; use **`npm run db:init`** instead.
 
    Requirements: **`.env`** must exist (step 2) with **`DB_HOST`**, **`DB_USER`**, **`DB_NAME`** set to match your running MySQL server. Local install is usually `DB_HOST=localhost`, `DB_USER=root`, `DB_NAME=campus_radius`, and `DB_PASSWORD=` empty or your root password.
+
+   **Hosted MySQL (e.g. Aiven):** use the host, **non-default port**, user, password, and database name from the provider’s console. Set **`DB_SSL=true`**. The database name is often **`defaultdb`**, not `campus_radius`. After **`.env`** matches the provider, check connectivity without installing the `mysql` CLI:
+
+   ```bash
+   npm run db:test
+   ```
+
+   Then apply the schema (creates `schools` inside that database):
+
+   ```bash
+   npm run db:init
+   ```
+
+   If the provider already created the database and forbids `CREATE DATABASE` (common on Aiven), add **`SKIP_CREATE_DATABASE=true`** to **`.env`** and run **`npm run db:init`** again.
+
+   On Windows, **`mysql` is not recognized** means the MySQL *client* is not installed—use **`npm run db:test`** and **`npm run db:init`** instead.
 
 4. Start the server:
 
